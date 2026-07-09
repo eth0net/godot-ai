@@ -36,6 +36,51 @@ When ready:
 - To switch back: remove the symlink, reinstall the released addon, repoint the
   MCP client.
 
+## Contribution strategy — two gates, two tracks
+
+The upstream bar is high and mechanical (AGENTS.md + CONTRIBUTING.md): 100%
+coverage on **both** the Python and GDScript sides, live-editor smoke before
+every commit, a 4-row OS/version CI matrix (incl. a Godot 4.5 canary),
+`tool_catalog.gd` sync, self-update `class_name` safety, docs. That standard is
+the real constraint. Reconcile "features now" with "contribute back" by not
+treating "done" as one thing:
+
+**Two quality gates**
+- **Gate 1 — dev/personal (fast):** feature works in `shrine-guardian`.
+  GDScript handler + Python handler + registration + a live smoke. Merge to
+  `dev`, use it. Don't block on the full CI matrix.
+- **Gate 2 — upstream PR (strict):** once a feature has *settled* (API stable,
+  not churning), pay the full tax — both-sides tests, `tool_catalog.gd` sync,
+  docs, ruff, live smoke — and open the PR from a clean `feat/` branch.
+
+**Two tracks (sequence by upstreamability, not just value)**
+- **Track A — upstream-first.** Fix/perf-shaped, existing fixtures, low
+  API-design risk, high acceptance. Build these to Gate 2 from the start and PR
+  early to build reviewer trust: the warnings-watermark **bug** fix (#4), test
+  warnings bucket (#5), `node_get_properties` filter (#3),
+  `scene_get_hierarchy` real pagination, the double-UTF-8-encode fix, the
+  `from_node` O(n·depth) fix, the resource/instructions/docstring token trims,
+  and surfacing `game_eval` (#2, mostly docs).
+- **Track B — dev-now, upstream-after-an-issue.** New opinionated surface, needs
+  new test fixtures (a gdUnit4 fixture project; live 4.5+4.7 tests for tile/nav
+  APIs), design-sensitive. Build to Gate 1 for the game now; **open a GitHub
+  issue first** to agree the shape before a PR: play-testing ops
+  (#1/#6/#7/#8), `diagnostics_read` (#9), gdUnit runner (#11), TileSet/Nav/
+  terrain/font authoring (#12–15). Some may live on the fork permanently — MIT,
+  and that's a fine outcome.
+
+**Two operating rules**
+1. Write the GDScript live-editor test **as you build**, even on `dev` — it's
+   the one thing that's expensive to retrofit and it doubles as your own
+   in-editor validation.
+2. Don't let upstream review latency block the game. Contributing back is
+   upside, not a dependency.
+
+Low-risk first engagement: file the four review reports as GitHub issues (the
+`file:line` anchors are already here). Zero-code, and it gauges maintainer
+receptiveness before you invest in PRs — especially the warnings bug and the
+perf findings.
+
 ### Per-feature CI checklist (keeps upstream PRs green first try)
 
 For each new tool/op, touch these in lockstep:
@@ -276,11 +321,22 @@ From the review, beyond #3/#4 above:
 
 ---
 
-## Suggested first PRs (in order)
-1. #1 snapshot + #2 surface `game_eval` (days; unblocks play-testing today)
-2. #3 `node_get_properties` filter + `scene_get_hierarchy` real pagination
-3. #4 warnings watermark + #5 test warnings bucket
-4. #6/#7/#8 input timeline + wait_until + auto-focus
-5. #9 `diagnostics_read` (after #10 verification)
-6. #11 gdUnit runner
-7. #12 TileSet authoring, #14 Nav2D baking, #13 terrain paint, #15 fonts
+## Suggested first PRs (in order) — Track A first
+
+Lead with Track A (fix/perf-shaped, upstream-friendly, no new fixtures), then
+Track B after issues are opened.
+
+1. **#4 warnings-watermark fix** — the priority; a genuine bug (warning-only
+   runs report "clean"). Isolated PR-ready branch + tests. *(in progress)*
+2. #5 test warnings bucket (rides on #4's warn plumbing)
+3. #3 `node_get_properties` `changed_only`/`fields`
+4. `scene_get_hierarchy` real (plugin-side) pagination + dead `root` read
+5. double-UTF-8-encode fix; `from_node` O(n·depth) fix
+6. token trims: `api_manage` default sections, `godot://scene/hierarchy`
+   pagination, `server.py` instructions, `editor.py` docstrings
+7. #2 surface `game_eval` + helper recipe (docs-heavy)
+--- Track B (issue first, dev-now) ---
+8. #1 snapshot, then #6/#7/#8 input timeline + wait_until + auto-focus
+9. #9 `diagnostics_read` (after #10 verification)
+10. #11 gdUnit runner
+11. #12 TileSet authoring, #14 Nav2D baking, #13 terrain paint, #15 fonts
