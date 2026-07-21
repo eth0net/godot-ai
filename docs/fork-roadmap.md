@@ -96,6 +96,12 @@ For each new tool/op, touch these in lockstep:
   `websocket.py::_PLUGIN_EVENT_NAMES` if adding plugin events
 - Tests both sides — `pytest` + a GDScript suite when crossing the plugin boundary
 - **Never delete a shipped `class_name`** — leave a compatibility shim
+- **Benchmark any perf-motivated change.** Copy `script/bench/_template.gd`,
+  prove the candidates agree, and paste the table + script into the PR (full
+  method in `script/bench/README.md`). The maintainer hand-benches GDScript perf
+  PRs (#743, #801); leading with our own numbers matches that bar. A complexity
+  argument is not a benchmark — #743 was "2 walks → 1" yet measured 1.44–3.31×
+  *slower*.
 
 ---
 
