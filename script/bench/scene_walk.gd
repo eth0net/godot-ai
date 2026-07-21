@@ -100,8 +100,9 @@ func _walk_incremental(root: Node, offset: int, limit: int, max_depth: int) -> A
 
 
 func _walk_branched(root: Node, offset: int, limit: int, max_depth: int) -> Array:
-	# Mirrors the shipped scene_handler._walk_tree branch.
-	if limit <= 0:
+	# Mirrors the shipped scene_handler._walk_tree branch: incremental only for a
+	# true whole-tree read (offset == 0 and limit <= 0), from_node otherwise.
+	if limit <= 0 and offset == 0:
 		return _walk_incremental(root, offset, limit, max_depth)
 	return _walk_current(root, offset, limit, max_depth)
 
