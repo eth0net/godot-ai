@@ -319,9 +319,15 @@ From the review, beyond #3/#4 above:
   while the tool form paginates — apply a default depth/node cap.
 - **`api_manage(get_class)` defaults to all 5 sections**
   (`class_introspection.gd:8`) — default to `["properties"]` or names-only.
-- **Server `instructions` string** (`server.py:203-270`, ~1,200 tokens/session)
-  lists ~14 deferred verbs as "always loaded" (only 4 are core) — collapse to
-  the 4 real core tools + a tool-search pointer.
+- ~~**Server `instructions` string** — collapse to the 4 core tools + a
+  tool-search pointer.~~ **REJECTED (investigated 2026-07-21).** The full
+  enumeration is deliberate: `test_advertised_surface_matches_live_registration`
+  asserts every registered tool (incl. `DEFER_META` ones) appears in the text,
+  and the header count matches `list_tools()` — this is the #772 honesty design
+  guarding against surface/registration drift. `DEFER_META` is only a client
+  hint (some clients ignore it and load everything), so advertising the full
+  surface is correct. The ~1,200 tokens are a chosen cost, not waste; trimming
+  would break the test and contradict the maintainer's design.
 - **`editor.py` docstrings** (~9,100 chars) read like manuals — trim war-stories
   to a `godot://` doc resource (~4-5k tokens, non-tool-search clients only).
 
